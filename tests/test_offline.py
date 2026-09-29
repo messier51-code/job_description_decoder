@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from jd_decoder.config import SKILL_FILES, discover_jd_paths, validate_paths
+from jd_decoder.config import SKILL_FILES, discover_jd_paths
 from jd_decoder.models import AppConfig, WorkerResult
 from jd_decoder.parsing import heuristic_parse
 from jd_decoder.table import format_results_table
@@ -19,18 +19,18 @@ def test_discover_jd_paths():
     assert all(p.endswith(".md") for p in paths)
 
 
-def test_validate_paths():
-    config = validate_paths(
-        AppConfig(
-            input_dir=str(ROOT / "examples" / "job_descriptions"),
-            state_path=str(ROOT / "examples" / "coaching_state.md"),
-            skill_dir=str(ROOT / "skill"),
-            output_path=str(ROOT / "results.md"),
-        )
+def test_app_config_resolves_paths_and_discovers_jds():
+    config = AppConfig(
+        input_dir=str(ROOT / "examples" / "job_descriptions"),
+        state_path=str(ROOT / "examples" / "coaching_state.md"),
+        skill_dir=str(ROOT / "skill"),
+        output_path=str(ROOT / "results.md"),
     )
     assert Path(config.state_path).is_file()
+    assert Path(config.input_dir).is_dir()
     for rel in SKILL_FILES:
         assert (Path(config.skill_dir) / rel).is_file()
+    assert config.jd_paths == discover_jd_paths(ROOT / "examples" / "job_descriptions")
 
 
 def test_setup_workspace_and_read_file():
